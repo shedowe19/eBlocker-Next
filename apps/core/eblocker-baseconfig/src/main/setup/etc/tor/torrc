@@ -1,0 +1,5 @@
+# Required external control-auth configuration; absence fails closed.
+# Provision a loopback ControlPort and per-installation HashedControlPassword there.
+# Never enable an unauthenticated control listener.
+%include /etc/tor/eblocker-control-auth.conf
+SOCKSPort 9050

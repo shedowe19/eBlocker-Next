@@ -1,0 +1,22 @@
+.classpath
+.project
+
+.settings
+.idea
+target
+*.iml
+.DS_Store
+*~
+*.log
+*.log.*
+
+.cache
+
+.scratch
+/.test-results
+
+# temp(old) and working files of controlbar and settings
+eblocker-icapserver/src/htdocs/temp
+/eblocker-malware/
+
+eblocker-icapserver/src/htdocs/stylesheets/app.css
