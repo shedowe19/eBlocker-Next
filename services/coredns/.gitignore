@@ -1,4 +1,4 @@
 .vscode/
 eblocker-coredns
-Corefile
+/Corefile
 hosts
