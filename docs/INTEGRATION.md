@@ -2,6 +2,15 @@
 
 ## Current verified result
 
+Verified remote baseline: commit `938d9c8e6a430b3960aa4a1bb696be00ecb73ccb`,
+[GitHub Actions run 43564934584](https://github.com/shedowe19/eBlocker-Next/actions/runs/43564934584),
+completed successfully on 2026-11-14. All seven jobs passed: structure, build-tools,
+CoreDNS, DynDNS, environment simulator, native compilation and the Maven reactor.
+The Java job reports 2837 tests, zero failures/errors and five integration skips.
+The same job ran ChromeHeadless 157: **280 UI tests passed**. This is browser unit
+coverage, not an end-to-end installed appliance test.
+
+
 22 pinned official component sources are present in one checkout, without Git
 submodules. 16 Maven modules share one reactor; Java parents/dependencies and
 Ruby Git-source dependencies resolve to local component paths. Provenance and
@@ -21,7 +30,7 @@ original notices remain in `upstream.lock.json` and each component.
   six modules. All 18 generated local JS/CSS references exist.
 - 91 Ruby files pass syntax compilation; two pure DNS utility tests pass.
 
-These are not installed-appliance or full browser tests. Do not treat this as a
+These are not installed-appliance or end-to-end browser tests. Do not treat this as a
 production-ready release.
 
 ## Repairs and refactoring performed
@@ -51,15 +60,12 @@ production-ready release.
 
 ### Browser and appliance validation
 
-ChromeHeadless cannot start in this execution container: process-singleton Unix
-socket access is denied, including a run with normal process access requested.
-Chromium's sandbox was not disabled. Karma bundling reaches browser launch with
-no missing-module error after the fresh-checkout fix, but browser assertions have
-not run. A supported browser/CI runner is required. Available environments were checked:
-cloud execution is the same restricted runner; the connected Windows computer has
-browsers but no running Docker Linux engine or installed WSL distribution, and
-current read-only npm access fails. No computer setup was changed. A prepared,
-authorized isolated runner is needed before appliance validation can continue.
+The original local runner could not start ChromeHeadless without a sandbox/socket
+restriction; no browser sandbox was disabled. That unit-test blocker is now
+resolved by the verified GitHub Actions run above. All 280 browser assertions
+passed there. Browser-based end-to-end verification of an installed Bookworm
+appliance remains open. The current development host is Debian13, not Bookworm;
+no result on this host establishes Bookworm runtime compatibility.
 
 No disposable Bookworm VM, installed services, hardware LED/SPI, packet capture,
 proxy/filtering/DNS integration, reboot, upgrade or rollback has been exercised.
@@ -107,7 +113,7 @@ patterns; it is not a complete secret audit. Its latest run passed.
 
 Publication target: `shedowe19/eBlocker-Next` (public), created by its owner.
 This is an experimental source snapshot, not a supported appliance release.
-CI files are prepared but have not run remotely. Credentials, package caches,
+The owner imported the source, and remote CI passed on the baseline identified above. Credentials, package caches,
 logs and generated build output are excluded from this source repository.
 
 ## Test environment notes
@@ -146,8 +152,9 @@ rejected authentication closes it. No live Tor service was contacted.
 
 ## Local follow-up after publication was blocked
 
-Publication remains blocked by the upload authorization check. No source snapshot
-or new workflow has been published; these additional changes are local only.
+Historical note: these changes were first tested locally while publication was
+blocked. They are included in the owner-imported baseline verified above. No
+blocked snapshot upload was retried through another route.
 Four synthetic regression tests now cover token-family recognition, XML-escaped
 values, provider/Tor assignments and permitted external references in the limited
 credential detector. Combined with the four structure checks, all eight pass.

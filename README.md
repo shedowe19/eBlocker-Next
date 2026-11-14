@@ -1,8 +1,8 @@
 # eBlocker-Next: experimental monorepo refactoring
 
 This is an independent integration of current official eBlocker sources, not an
-upstream release and not yet production-ready. Browser and appliance validation
-remain open; see `docs/INTEGRATION.md`. No former user fork
+upstream release and not yet production-ready. Installed-appliance and end-to-end validation
+remain open; browser unit tests now pass in CI; see `docs/INTEGRATION.md`. No former user fork
 or implementation is included.
 
 ## Layout
