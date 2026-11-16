@@ -56,7 +56,7 @@ jobs:
       LOG_DIR: ${{ github.workspace }}/dist/logs/${{ matrix.group }}
       CHROME_BIN: /usr/local/bin/eblocker-ci-chromium
       MAVEN_OPTS: -Xmx3g
-      JOBS: '2'
+      JOBS: ${{ inputs.architecture == 'arm64' && '4' || '2' }}
     steps:
       - name: Prepare container for checkout
         run: |

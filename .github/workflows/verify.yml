@@ -22,6 +22,8 @@ jobs:
         with:
           node-version: '16.13.0'
       - run: node apps/core/eblocker-ui/tools/task-completion.test.js
+      - run: sudo apt-get update && sudo apt-get install -y optipng
+      - run: node apps/core/eblocker-ui/tools/image-optimization.test.js
   go:
     runs-on: ubuntu-24.04
     strategy:

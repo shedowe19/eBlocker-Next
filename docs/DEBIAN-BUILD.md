@@ -37,6 +37,9 @@ archives and build logs are also retained for 30 days.
   `amd64-bookworm` bootstrap profile selects its repository configuration.
   ARM64 selects the existing `raspios-bookworm` bootstrap profile for the
   Raspberry Pi package repository. Architecture-independent Java packages stay `all`.
+  If the legacy optional PNG optimizer has no usable binary for the host,
+  the production image task uses Bookworm's native `optipng` with the same
+  optimization settings. Lossless PNG output and failure propagation are tested.
   CI uses the documented Google HTTPS mirror for Maven Central, validates
   artifact checksums and retries only temporary download failures. Compiler and
   test failures remain fatal.

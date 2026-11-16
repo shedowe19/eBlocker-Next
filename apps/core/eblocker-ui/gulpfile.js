@@ -60,6 +60,7 @@ const gulpUglify = require('gulp-uglify');
 
 const fs = require('fs');
 const { completeTasks, karmaError } = require('./tools/task-completion');
+const { pngOptimizer } = require('./tools/image-optimization');
 const csv2json = require('csv2json');
 const Json2csvParser = require('json2csv').Parser;
 const nlf = require('nlf');
@@ -683,7 +684,7 @@ function compressAndCopyImages() {
     return gulp
         .src(config.images)
         .pipe(gulpImageMin([
-                gulpImageMin.optipng({optimizationLevel: 5}),
+                pngOptimizer(gulpImageMin.optipng, {optimizationLevel: 5}),
                 gulpImageMin.svgo({plugins: [
                         {removeViewBox: false}, {cleanupIDs: false}
                     ]})

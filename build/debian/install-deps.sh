@@ -18,7 +18,7 @@ apt-get install -y --no-install-recommends \
   file xz-utils zstd unzip ca-certificates curl git
 case "${1:?Specify java, services, ruby, squid or tor}" in
   java)
-    apt-get install -y --no-install-recommends maven chromium fonts-liberation \
+    apt-get install -y --no-install-recommends maven chromium fonts-liberation optipng \
       zlib1g-dev libpng-dev autoconf automake libtool
     cat > /usr/local/bin/eblocker-ci-chromium <<'CHROME'
 #!/bin/sh

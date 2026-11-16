@@ -39,6 +39,8 @@ printf 'Building %s Maven packages with bootstrap profile %s\n' "$target_arch" "
 # No update-lists profile: package the checked-in data without fetching external feeds.
 bash "$root_dir/build/debian/maven-ci.sh" \
     "-P$bootstrap_profile" "-DdebTargetDir=$OUTPUT_DIR" clean package
+"$root_dir/apps/core/eblocker-ui/node/node" \
+    "$root_dir/apps/core/eblocker-ui/tools/image-optimization.test.js"
 
 declare -A expected=(
     [eblocker-icapserver]=0
