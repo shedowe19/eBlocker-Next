@@ -1,6 +1,7 @@
 {
   "distribution": "bookworm",
   "architecture": "amd64",
+  "architectures": ["amd64", "arm64"],
   "groups": {
     "java": ["eblocker-icapserver", "eblocker-baseconfig", "eblocker-certificate-validator", "eblocker-ui", "eblocker-bootstrap", "eblocker-lists"],
     "services": ["eblocker-coredns", "eblocker-dyndns", "eblocker-network-tools"],

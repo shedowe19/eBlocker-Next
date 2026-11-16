@@ -3,6 +3,12 @@
 set -Eeuo pipefail
 
 root_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)
+target_arch=${TARGET_ARCH:-amd64}
+case "$target_arch" in
+    amd64) bootstrap_profile=amd64-bookworm ;;
+    arm64) bootstrap_profile=raspios-bookworm ;;
+    *) printf 'Unsupported TARGET_ARCH: %s\n' "$target_arch" >&2; exit 2 ;;
+esac
 : "${OUTPUT_DIR:?Set OUTPUT_DIR to an absolute package output directory}"
 if [[ $OUTPUT_DIR != /* ]]; then
     printf 'OUTPUT_DIR must be absolute: %s\n' "$OUTPUT_DIR" >&2
@@ -28,10 +34,11 @@ fi
 
 mkdir -p -- "$OUTPUT_DIR"
 cd -- "$root_dir"
+printf 'Building %s Maven packages with bootstrap profile %s\n' "$target_arch" "$bootstrap_profile"
 # The UI activates quickrun on the presence of skipTests; do not set that property.
 # No update-lists profile: package the checked-in data without fetching external feeds.
 bash "$root_dir/build/debian/maven-ci.sh" \
-    -Pamd64-bookworm "-DdebTargetDir=$OUTPUT_DIR" clean package
+    "-P$bootstrap_profile" "-DdebTargetDir=$OUTPUT_DIR" clean package
 
 declare -A expected=(
     [eblocker-icapserver]=0

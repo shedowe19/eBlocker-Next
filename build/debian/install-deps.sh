@@ -3,7 +3,14 @@
 set -euo pipefail
 source /etc/os-release
 [[ ${ID:-} == debian && ${VERSION_CODENAME:-} == bookworm ]]
-[[ $(dpkg --print-architecture) == amd64 ]]
+target_arch=${TARGET_ARCH:-amd64}
+case "$target_arch" in
+  amd64) native_machine=x86_64 ;;
+  arm64) native_machine=aarch64 ;;
+  *) echo "Unsupported target architecture: $target_arch" >&2; exit 2 ;;
+esac
+[[ $(dpkg --print-architecture) == "$target_arch" ]]
+[[ $(uname -m) == "$native_machine" ]]
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get install -y --no-install-recommends \
@@ -11,7 +18,8 @@ apt-get install -y --no-install-recommends \
   file xz-utils zstd unzip ca-certificates curl git
 case "${1:?Specify java, services, ruby, squid or tor}" in
   java)
-    apt-get install -y --no-install-recommends maven chromium fonts-liberation
+    apt-get install -y --no-install-recommends maven chromium fonts-liberation \
+      zlib1g-dev libpng-dev autoconf automake libtool
     cat > /usr/local/bin/eblocker-ci-chromium <<'CHROME'
 #!/bin/sh
 exec /usr/bin/chromium --no-sandbox --disable-dev-shm-usage "$@"
@@ -35,7 +43,11 @@ CHROME
     apt-get install -y --no-install-recommends \
       quilt libssl-dev zlib1g-dev libevent-dev asciidoc docbook-xml docbook-xsl \
       xmlto dh-apparmor libsystemd-dev libcap-dev dh-autoreconf liblzma-dev \
-      libzstd-dev dh-runit libseccomp-dev
+      libzstd-dev dh-runit
+    # The pinned Tor DSC conflicts with libseccomp-dev on non-x86 targets.
+    if [[ "$target_arch" == amd64 ]]; then
+      apt-get install -y --no-install-recommends libseccomp-dev
+    fi
     ;;
   *) echo 'Unknown build group' >&2; exit 2 ;;
 esac

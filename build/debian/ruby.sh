@@ -8,7 +8,16 @@ root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)
 [[ "$OUTPUT_DIR" = /* ]] || { echo 'OUTPUT_DIR must be absolute' >&2; exit 2; }
 . /etc/os-release
 [[ "${VERSION_CODENAME:-}" = bookworm ]] || { echo 'Debian Bookworm is required' >&2; exit 2; }
-[[ "$(dpkg --print-architecture)" = amd64 ]] || { echo 'This build targets amd64' >&2; exit 2; }
+export TARGET_ARCH=${TARGET_ARCH:-amd64}
+case "$TARGET_ARCH" in
+    amd64) machine=x86_64 ;;
+    arm64) machine=aarch64 ;;
+    *) echo "Unsupported target architecture: $TARGET_ARCH" >&2; exit 2 ;;
+esac
+[[ "$(dpkg --print-architecture)" = "$TARGET_ARCH" &&
+   "$(uname -s)" = Linux && "$(uname -m)" = "$machine" ]] || {
+    echo "A native Bookworm/$TARGET_ARCH build environment is required" >&2; exit 2;
+}
 case " ${DEB_BUILD_OPTIONS:-} ${DEB_BUILD_PROFILES:-} " in
     *' nocheck '*) echo 'Refusing to disable package tests' >&2; exit 2 ;;
 esac
@@ -76,7 +85,7 @@ bundle exec dpkg-buildpackage --build=binary --no-sign
 found=0
 while IFS= read -r -d '' artifact; do
     [[ "$(dpkg-deb -f "$artifact" Package)" = "$package" ]] || continue
-    [[ "$(dpkg-deb -f "$artifact" Architecture)" = amd64 ]] || {
+    [[ "$(dpkg-deb -f "$artifact" Architecture)" = "$TARGET_ARCH" ]] || {
         echo "Unexpected package architecture: $artifact" >&2; exit 1;
     }
     extracted="$scratch/extracted"

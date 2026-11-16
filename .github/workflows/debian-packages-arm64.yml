@@ -1,0 +1,28 @@
+name: Debian packages ARM64
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/debian-packages-arm64.yml'
+      - '.github/workflows/debian-packages.yml'
+      - 'build/debian/**'
+      - 'pom.xml'
+      - 'apps/**'
+      - 'services/**'
+      - 'legacy/**'
+      - 'libs/**'
+      - 'third_party/**'
+      - 'data/**'
+      - 'packaging/bootstrap/**'
+      - 'packaging/images/tor-bookworm/**'
+
+permissions:
+  contents: read
+
+jobs:
+  arm64:
+    uses: ./.github/workflows/debian-packages.yml
+    with:
+      architecture: arm64

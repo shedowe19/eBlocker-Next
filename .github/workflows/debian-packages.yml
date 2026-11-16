@@ -2,6 +2,18 @@ name: Debian packages
 
 on:
   workflow_dispatch:
+    inputs:
+      architecture:
+        description: Native Debian target architecture
+        type: choice
+        default: amd64
+        options: [amd64, arm64]
+  workflow_call:
+    inputs:
+      architecture:
+        description: Native Debian target architecture
+        type: string
+        default: amd64
   push:
     branches: [main]
     paths:
@@ -21,13 +33,13 @@ permissions:
   contents: read
 
 concurrency:
-  group: debian-packages-${{ github.sha }}
+  group: debian-packages-${{ github.sha }}-${{ inputs.architecture || 'amd64' }}
   cancel-in-progress: false
 
 jobs:
   packages:
-    name: Bookworm amd64 / ${{ matrix.group }}
-    runs-on: ubuntu-24.04
+    name: Bookworm ${{ inputs.architecture || 'amd64' }} / ${{ matrix.group }}
+    runs-on: ${{ inputs.architecture == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     container: debian:bookworm
     timeout-minutes: 90
     strategy:
@@ -39,6 +51,7 @@ jobs:
         shell: bash
     env:
       BUILD_GROUP: ${{ matrix.group }}
+      TARGET_ARCH: ${{ inputs.architecture || 'amd64' }}
       OUTPUT_DIR: ${{ github.workspace }}/dist/debs/${{ matrix.group }}
       LOG_DIR: ${{ github.workspace }}/dist/logs/${{ matrix.group }}
       CHROME_BIN: /usr/local/bin/eblocker-ci-chromium
@@ -72,11 +85,11 @@ jobs:
           mkdir -p "$OUTPUT_DIR" "$LOG_DIR"
           bash "build/debian/$BUILD_GROUP.sh" 2>&1 | tee "$LOG_DIR/build.log"
       - name: Inspect package metadata and payloads
-        run: python3 build/debian/verify-packages.py "$OUTPUT_DIR" --group "$BUILD_GROUP"
+        run: python3 build/debian/verify-packages.py "$OUTPUT_DIR" --group "$BUILD_GROUP" --architecture "$TARGET_ARCH"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: debs-bookworm-amd64-${{ matrix.group }}
+          name: debs-bookworm-${{ inputs.architecture || 'amd64' }}-${{ matrix.group }}
           path: dist/debs/${{ matrix.group }}/*
           if-no-files-found: warn
           compression-level: 0
@@ -84,38 +97,40 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: build-logs-bookworm-amd64-${{ matrix.group }}
+          name: build-logs-bookworm-${{ inputs.architecture || 'amd64' }}-${{ matrix.group }}
           path: dist/logs/${{ matrix.group }}/*
           if-no-files-found: warn
           retention-days: 30
 
   complete:
-    name: Complete package set
+    name: Complete ${{ inputs.architecture || 'amd64' }} package set
     needs: packages
     if: always()
     runs-on: ubuntu-24.04
+    env:
+      TARGET_ARCH: ${{ inputs.architecture || 'amd64' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
-          pattern: debs-bookworm-amd64-*
+          pattern: debs-bookworm-${{ inputs.architecture || 'amd64' }}-*
           path: dist/complete
           merge-multiple: true
       - name: Verify complete package inventory
         env:
           BUILD_RESULT: ${{ needs.packages.result }}
         run: |
-          python3 build/debian/verify-packages.py dist/complete
+          python3 build/debian/verify-packages.py dist/complete --architecture "$TARGET_ARCH"
           test "$BUILD_RESULT" = success
           {
-            echo '## Debian 12 Bookworm / amd64'
+            echo "## Debian 12 Bookworm / $TARGET_ARCH"
             echo 'All 15 required packages built and inspected. Debug-symbol archives may also be included.'
             echo
-            echo 'Download debian-bookworm-amd64-complete for the packages, manifest and SHA256SUMS.'
+            echo "Download debian-bookworm-$TARGET_ARCH-complete for the packages, manifest and SHA256SUMS."
           } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         with:
-          name: debian-bookworm-amd64-complete
+          name: debian-bookworm-${{ inputs.architecture || 'amd64' }}-complete
           path: dist/complete/*
           if-no-files-found: error
           compression-level: 0

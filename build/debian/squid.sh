@@ -14,8 +14,19 @@ if [ "${ID:-}" != debian ] || [ "${VERSION_CODENAME:-}" != bookworm ]; then
     echo 'Build Squid in the isolated Debian Bookworm build container.' >&2
     exit 2
 fi
-if [ "$(dpkg --print-architecture)" != amd64 ]; then
-    echo 'This workflow currently builds Squid for amd64 only.' >&2
+target_arch=${TARGET_ARCH:-amd64}
+case "$target_arch" in
+    amd64|arm64) ;;
+    *) echo "Unsupported TARGET_ARCH: $target_arch" >&2; exit 2 ;;
+esac
+case "$(uname -m)" in
+    x86_64) kernel_arch=amd64 ;;
+    aarch64|arm64) kernel_arch=arm64 ;;
+    *) echo 'Squid requires a native amd64 or arm64 Linux runner.' >&2; exit 2 ;;
+esac
+debian_arch=$(dpkg --print-architecture)
+if [ "$debian_arch" != "$target_arch" ] || [ "$kernel_arch" != "$target_arch" ]; then
+    echo "Squid architecture mismatch: target=$target_arch dpkg=$debian_arch kernel=$kernel_arch" >&2
     exit 2
 fi
 
@@ -38,11 +49,16 @@ for package in "$build_dir"/*.deb; do
     [ -f "$package" ] || continue
     name=$(dpkg-deb --field "$package" Package)
     case "$name" in
-        eblocker-squid) have_squid=true ;;
-        eblocker-squid-common) have_common=true ;;
-        eblocker-squid-dbgsym) ;;
+        eblocker-squid) have_squid=true; expected_arch=$target_arch ;;
+        eblocker-squid-common) have_common=true; expected_arch=all ;;
+        eblocker-squid-dbgsym) expected_arch=$target_arch ;;
         *) echo "Unexpected Squid output package: $name" >&2; exit 1 ;;
     esac
+    package_arch=$(dpkg-deb --field "$package" Architecture)
+    if [ "$package_arch" != "$expected_arch" ]; then
+        echo "Wrong architecture for $name: expected $expected_arch, got $package_arch" >&2
+        exit 1
+    fi
     dpkg-deb --info "$package"
     cp -- "$package" "$output_dir/"
 done

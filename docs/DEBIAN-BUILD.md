@@ -1,8 +1,10 @@
 # Debian package builds
 
 The **Debian packages** GitHub Actions workflow builds Debian 12 Bookworm
-packages for **amd64**. Run it from the repository's Actions tab using
-**Run workflow**. Changes to the workflow, package definitions and build helpers
+packages for **amd64** or **arm64** on native GitHub-hosted runners. Run it from
+the repository's Actions tab using **Run workflow** and select the architecture.
+The separate **Debian packages ARM64** entry always builds arm64 using the same
+reusable workflow. Changes to the workflow, package definitions and build helpers
 also trigger it on `main`.
 
 Five independent jobs build the existing package families in disposable
@@ -17,12 +19,13 @@ Five independent jobs build the existing package families in disposable
 | Tor | tor, tor-geoipdb |
 
 The final **Complete package set** job requires all 15 packages. It inspects
-each archive's package name, version, architecture and payload without installing
+each archive's package name, version, architecture and ELF machine type without installing
 it or running its maintainer scripts. Debug-symbol packages may be included too.
 The machine-readable inventory is `build/debian/packages.json`; the structural
 tests check that no in-repository Debian package definition is omitted.
 
-Download **debian-bookworm-amd64-complete** from the completed run for all
+Download **debian-bookworm-amd64-complete** or **debian-bookworm-arm64-complete**
+from the matching completed run for all
 packages, `manifest.json` and `SHA256SUMS`. The manifest records the source commit
 and each package's version, architecture, size and SHA256. Individual group
 archives and build logs are also retained for 30 days.
@@ -32,6 +35,8 @@ archives and build logs are also retained for 30 days.
 - The Java reactor uses the local backend and libraries, including the filter-list
   module. Tests and UI production minification remain enabled. The existing
   `amd64-bookworm` bootstrap profile selects its repository configuration.
+  ARM64 selects the existing `raspios-bookworm` bootstrap profile for the
+  Raspberry Pi package repository. Architecture-independent Java packages stay `all`.
   CI uses the documented Google HTTPS mirror for Maven Central, validates
   artifact checksums and retries only temporary download failures. Compiler and
   test failures remain fatal.
