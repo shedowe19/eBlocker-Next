@@ -45,13 +45,19 @@ public class CryptoServiceTest {
         doTest(getCryptoService(generateMasterKey(16)), "Hello World");
     }
 
-    @Test(expected = CryptoException.class)
-    public void test_fail_different_keys() throws CryptoException {
+    @Test
+    public void test_fail_different_keys() throws Exception {
         String plainText = "Hello World";
         CryptoService encryptionService = getCryptoService(new byte[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
         CryptoService decryptionService = getCryptoService(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0});
 
-        decryptionService.decrypt(encryptionService.encrypt(plainText.getBytes(CHARSET)));
+        // A wrong CBC key can randomly produce valid padding. Use a fixed
+        // vector whose padding is invalid under the second key instead.
+        EncryptedData fixture = new EncryptedData(new byte[16],
+                Hex.decodeHex("7dac0ef1c64ed14497730815a8ac4e84".toCharArray()));
+        assertArrayEquals(plainText.getBytes(CHARSET), encryptionService.decrypt(fixture));
+        CryptoException error = assertThrows(CryptoException.class, () -> decryptionService.decrypt(fixture));
+        assertTrue(error.getCause() instanceof javax.crypto.BadPaddingException);
     }
 
     @Test
