@@ -32,6 +32,9 @@ archives and build logs are also retained for 30 days.
 - The Java reactor uses the local backend and libraries, including the filter-list
   module. Tests and UI production minification remain enabled. The existing
   `amd64-bookworm` bootstrap profile selects its repository configuration.
+  CI uses the documented Google HTTPS mirror for Maven Central, validates
+  artifact checksums and retries only temporary download failures. Compiler and
+  test failures remain fatal.
 - The lists package uses the checked-in source data. Building it does not update
   external protection feeds or enable the optional `update-lists` profile.
 - Native and Go packages use Bookworm libraries and Go 1.25. Ruby packaging vendors

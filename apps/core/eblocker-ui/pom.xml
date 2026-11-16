@@ -89,6 +89,7 @@
                         </goals>
                         <configuration>
                             <deb>${debTargetDir}/${project.artifactId}_${project.version}.${maven.build.timestamp}_all.deb</deb>
+                            <changesOut>${debTargetDir}/${project.artifactId}_${project.version}.${maven.build.timestamp}_all.changes</changesOut>
 			    <snapshotExpand>true</snapshotExpand>
                             <skipPOMs>false</skipPOMs>
                             <dataSet>

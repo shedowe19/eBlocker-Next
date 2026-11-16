@@ -30,7 +30,8 @@ mkdir -p -- "$OUTPUT_DIR"
 cd -- "$root_dir"
 # The UI activates quickrun on the presence of skipTests; do not set that property.
 # No update-lists profile: package the checked-in data without fetching external feeds.
-mvn -B -ntp -Pamd64-bookworm "-DdebTargetDir=$OUTPUT_DIR" clean package
+bash "$root_dir/build/debian/maven-ci.sh" \
+    -Pamd64-bookworm "-DdebTargetDir=$OUTPUT_DIR" clean package
 
 declare -A expected=(
     [eblocker-icapserver]=0

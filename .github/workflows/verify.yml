@@ -44,7 +44,7 @@ jobs:
           distribution: temurin
           java-version: '11'
           cache: maven
-      - run: mvn -B test
+      - run: bash build/debian/maven-ci.sh test
   native:
     runs-on: ubuntu-24.04
     steps:
