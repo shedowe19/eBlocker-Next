@@ -18,9 +18,8 @@ package org.eblocker.lists.appwhitelist;
 
 import org.eblocker.server.common.blacklist.DomainFilter;
 import org.eblocker.server.common.blacklist.FilterDecision;
+import org.eblocker.server.common.blacklist.Filters;
 import org.eblocker.server.common.blacklist.HashFileFilter;
-import org.eblocker.server.common.blacklist.HashingFilter;
-import org.eblocker.server.common.blacklist.HostnameFilter;
 import org.eblocker.server.common.blacklist.SingleFileFilter;
 import org.eblocker.server.common.data.parentalcontrol.Category;
 import org.eblocker.server.common.data.parentalcontrol.ParentalControlFilterMetaData;
@@ -171,15 +170,15 @@ public class AppWhitelistCheck {
                     filter = new SingleFileFilter(StandardCharsets.UTF_8, path);
                     break;
                 case "domainblacklist/md5":
-                    filter = new HashingFilter(Hashing.md5(), new HashFileFilter(path));
+                    filter = Filters.hashing(Hashing.md5(), new HashFileFilter(path));
                     break;
                 case "domainblacklist/sha1":
-                    filter = new HashingFilter(Hashing.sha1(), new HashFileFilter(path));
+                    filter = Filters.hashing(Hashing.sha1(), new HashFileFilter(path));
                     break;
                 default:
                     throw new IllegalArgumentException("unknown format " + metadata.getFormat());
             }
-            return new HostnameFilter(filter);
+            return Filters.hostname(filter);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
