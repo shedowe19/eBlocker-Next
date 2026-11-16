@@ -1,10 +1,10 @@
-# Tor 0.4.9.15 for eBlockerOS 4.0.3 and 4.1.0
+# Tor 0.4.9.16 for eBlockerOS 4.0.3 and 4.1.0
 
 The eBlockerOS 4.0.3 VM is based on Debian 12 Bookworm and ships Tor 0.4.7.16.
 That client fails with missing `Desc=3 Microdesc=3` protocols
 ([issue #460][issue]). An isolated eBlockerOS 4.1.0 VM also uses Bookworm and
 shipped Tor 0.4.9.11, which bootstrapped successfully before this update. This
-recipe rebuilds Tor Project's Tor 0.4.9.15 Debian source package on Bookworm
+recipe rebuilds Tor 0.4.9.16 from the official Debian source archive on Bookworm
 for both eBlockerOS releases. The Raspberry Pi 4/5 image is 64-bit; the
 intended package architectures are `amd64` (VM/PC) and `arm64` (Pi). No binary
 packages or source archives are committed here.
@@ -28,16 +28,28 @@ DEBFULLNAME='Your Name' DEBEMAIL='you@example.org' \
 ```
 
 The script downloads three pinned inputs over HTTPS, checks their SHA256
-digests, and creates `tor` and `tor-geoipdb` packages. The upstream tarball's
-signed checksum was independently verified against Tor developer keys in the
-lab. Release engineering should repeat that signature check. The default
+digests, and creates `tor` and `tor-geoipdb` packages. All inputs come from
+[Debian's official Tor source pool](https://deb.debian.org/debian/pool/main/t/tor/).
+The upstream tarball and Debian diff retain their original pinned hashes.
+The `.dsc` is the Debian maintainer-signed copy: its checked SHA256 is
+`0bc6b65b2ae7770bed55bdce9081f08cc90ca3fc099540f053ff446edcd1fb72`.
+This replaces the unavailable Tor package-repository `.dsc`, without changing
+the source version or either source payload. The default
 `~eblab12+1` suffix identifies a lab build; maintainers can set
 `PACKAGE_VERSION` for an official package revision.
 
 Lab builds use `DEB_BUILD_OPTIONS=nocheck`; upstream unit tests are not run.
 Pass `DEB_BUILD_OPTIONS=''` to run them in a release build.
 
-## Validation on 3 November 2026
+The repository's GitHub package workflow invokes `build/debian/tor.sh` and
+enables upstream unit tests by default. That wrapper currently targets `amd64`,
+requires both binary packages and copies the resulting `.deb` files into the
+absolute `OUTPUT_DIR` artifact directory. It does not install or start Tor.
+
+## Historical validation of 0.4.9.15 on 3 November 2026
+
+The runtime checks below describe the earlier 0.4.9.15 lab packages. They do
+not establish runtime validation of the current 0.4.9.16 recipe.
 
 The `amd64` package was built in an isolated Debian 12 Bookworm environment.
 Installation on an isolated official eBlockerOS 4.0.3 VM upgraded only `tor`

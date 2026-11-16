@@ -3,11 +3,13 @@ source 'https://rubygems.org'
 # Specify your gem's dependencies in eBlockerDNS.gemspec
 gemspec
 
-gem 'async-io', :path => '../../third_party/async-io'
+# The imported 1.0.0 source predates Ruby 3; keep the Async 1.x reactor API.
+gem 'async-io', '= 1.43.2'
+gem 'async', '= 1.32.1'
 
 gem 'process-daemon', :path => '../../third_party/process-daemon'
 #gem 'process-daemon' # on macOS
 
 gem 'hsluv'
 
-gem 'nio4r', '~>1.2.1'
+gem 'nio4r', '~> 2.7'

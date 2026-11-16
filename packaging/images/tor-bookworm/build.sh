@@ -33,18 +33,18 @@ if [ -n "$(ls -A .)" ]; then
 fi
 
 curl -fLsS --retry 3 \
-    https://archive.torproject.org/tor-package-archive/tor-0.4.9.16.tar.gz \
+    https://deb.debian.org/debian/pool/main/t/tor/tor_0.4.9.16.orig.tar.gz \
     -o tor_0.4.9.16.orig.tar.gz
 curl -fLsS --retry 3 \
-    https://deb.torproject.org/torproject.org/pool/main/t/tor/tor_0.4.9.16-1.dsc \
+    https://deb.debian.org/debian/pool/main/t/tor/tor_0.4.9.16-1.dsc \
     -o tor_0.4.9.16-1.dsc
 curl -fLsS --retry 3 \
-    https://deb.torproject.org/torproject.org/pool/main/t/tor/tor_0.4.9.16-1.diff.gz \
+    https://deb.debian.org/debian/pool/main/t/tor/tor_0.4.9.16-1.diff.gz \
     -o tor_0.4.9.16-1.diff.gz
 
 cat > SHA256SUMS <<'EOF'
 6180e193152f4525bdca5475168419b2a2035b963c3c60162a187f86e6160e48  tor_0.4.9.16.orig.tar.gz
-a5187f21b36628efe5176a59e2f1ddbac17b2658b5110cfbeadfd9458074504e  tor_0.4.9.16-1.dsc
+0bc6b65b2ae7770bed55bdce9081f08cc90ca3fc099540f053ff446edcd1fb72  tor_0.4.9.16-1.dsc
 b46b6de5d6530cfc165cd43574d6d302774e4e9c203f31ebc9b7c61b661f224c  tor_0.4.9.16-1.diff.gz
 EOF
 sha256sum -c SHA256SUMS

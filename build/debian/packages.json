@@ -1,0 +1,26 @@
+{
+  "distribution": "bookworm",
+  "architecture": "amd64",
+  "groups": {
+    "java": ["eblocker-icapserver", "eblocker-baseconfig", "eblocker-certificate-validator", "eblocker-ui", "eblocker-bootstrap", "eblocker-lists"],
+    "services": ["eblocker-coredns", "eblocker-dyndns", "eblocker-network-tools"],
+    "ruby": ["eblocker-led", "eblocker-dns"],
+    "squid": ["eblocker-squid", "eblocker-squid-common"],
+    "tor": ["tor", "tor-geoipdb"]
+  },
+  "definitions": [
+    "apps/core/eblocker-icapserver/src/deb/control/control",
+    "apps/core/eblocker-baseconfig/src/deb/control/control",
+    "apps/core/eblocker-certificate-validator/src/deb/control/control",
+    "apps/core/eblocker-ui/deb/control/control",
+    "packaging/bootstrap/src/deb/control/control",
+    "data/filter-lists/src/deb/control/control",
+    "services/coredns/debian/control",
+    "services/dyndns/debian/control",
+    "services/network-tools/debian/control",
+    "services/led/debian/control",
+    "legacy/dns/debian/control",
+    "third_party/squid/debian/control"
+  ],
+  "external_recipes": ["packaging/images/tor-bookworm/build.sh"]
+}

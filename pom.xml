@@ -13,6 +13,7 @@
     <module>libs/crypto</module>
     <module>libs/registration-api</module>
     <module>apps/core</module>
+    <module>data/filter-lists</module>
     <module>packaging/bootstrap</module>
   </modules>
 </project>

@@ -1,0 +1,118 @@
+name: Debian packages
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/debian-packages.yml'
+      - 'build/debian/**'
+      - '**/pom.xml'
+      - '**/debian/**'
+      - '**/Gemfile*'
+      - '**/*.gemspec'
+      - 'packaging/images/tor-bookworm/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: debian-packages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  packages:
+    name: Bookworm amd64 / ${{ matrix.group }}
+    runs-on: ubuntu-24.04
+    container: debian:bookworm
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [java, services, ruby, squid, tor]
+    defaults:
+      run:
+        shell: bash
+    env:
+      BUILD_GROUP: ${{ matrix.group }}
+      OUTPUT_DIR: ${{ github.workspace }}/dist/debs/${{ matrix.group }}
+      LOG_DIR: ${{ github.workspace }}/dist/logs/${{ matrix.group }}
+      CHROME_BIN: /usr/local/bin/eblocker-ci-chromium
+      MAVEN_OPTS: -Xmx3g
+      JOBS: '2'
+    steps:
+      - name: Prepare container for checkout
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends git ca-certificates curl xz-utils zstd
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install Bookworm build dependencies
+        run: bash build/debian/install-deps.sh "$BUILD_GROUP"
+      - uses: actions/setup-java@v4
+        if: matrix.group == 'java'
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: maven
+      - uses: actions/setup-go@v5
+        if: matrix.group == 'services'
+        with:
+          go-version: '1.25.0'
+          cache-dependency-path: |
+            services/coredns/go.sum
+            services/dyndns/go.sum
+      - name: Build Debian packages
+        run: |
+          mkdir -p "$OUTPUT_DIR" "$LOG_DIR"
+          bash "build/debian/$BUILD_GROUP.sh" 2>&1 | tee "$LOG_DIR/build.log"
+      - name: Inspect package metadata and payloads
+        run: python3 build/debian/verify-packages.py "$OUTPUT_DIR" --group "$BUILD_GROUP"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: debs-bookworm-amd64-${{ matrix.group }}
+          path: dist/debs/${{ matrix.group }}/*
+          if-no-files-found: warn
+          compression-level: 0
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: build-logs-bookworm-amd64-${{ matrix.group }}
+          path: dist/logs/${{ matrix.group }}/*
+          if-no-files-found: warn
+          retention-days: 30
+
+  complete:
+    name: Complete package set
+    needs: packages
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: debs-bookworm-amd64-*
+          path: dist/complete
+          merge-multiple: true
+      - name: Verify complete package inventory
+        env:
+          BUILD_RESULT: ${{ needs.packages.result }}
+        run: |
+          python3 build/debian/verify-packages.py dist/complete
+          test "$BUILD_RESULT" = success
+          {
+            echo '## Debian 12 Bookworm / amd64'
+            echo 'All 15 required packages built and inspected. Debug-symbol archives may also be included.'
+            echo
+            echo 'Download debian-bookworm-amd64-complete for the packages, manifest and SHA256SUMS.'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: debian-bookworm-amd64-complete
+          path: dist/complete/*
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30

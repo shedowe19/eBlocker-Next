@@ -11,13 +11,14 @@ spec.loader.exec_module(module)
 
 class WorkspaceTests(unittest.TestCase):
     def test_structure_and_provenance(self):
-        self.assertEqual(module.verify(ROOT), (22, 16))
+        self.assertEqual(module.verify(ROOT), (22, 17))
 
     def test_legacy_dns_dependencies_are_local(self):
         import re
         gemfile = ROOT / 'legacy/dns/Gemfile'
         paths = re.findall(r":path => '([^']+)'", gemfile.read_text())
-        self.assertEqual(len(paths), 4)
+        self.assertEqual(len(paths), 3)
+        self.assertRegex(gemfile.read_text(), r"gem\s+'async-io',\s*'=\s*1\.43\.2'")
         self.assertNotIn(':git =>', gemfile.read_text())
         for path in paths:
             target = (gemfile.parent / path).resolve()
@@ -28,7 +29,8 @@ class WorkspaceTests(unittest.TestCase):
         import re
         gemfile = ROOT / 'services/led/Gemfile'
         paths = re.findall(r":path => '([^']+)'", gemfile.read_text())
-        self.assertEqual(len(paths), 2)
+        self.assertEqual(len(paths), 1)
+        self.assertRegex(gemfile.read_text(), r"gem\s+'async-io',\s*'=\s*1\.43\.2'")
         self.assertNotIn(':git =>', gemfile.read_text())
         for path in paths:
             target = (gemfile.parent / path).resolve()
