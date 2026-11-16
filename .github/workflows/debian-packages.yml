@@ -7,17 +7,21 @@ on:
     paths:
       - '.github/workflows/debian-packages.yml'
       - 'build/debian/**'
-      - '**/pom.xml'
-      - '**/debian/**'
-      - '**/Gemfile*'
-      - '**/*.gemspec'
+      - 'pom.xml'
+      - 'apps/**'
+      - 'services/**'
+      - 'legacy/**'
+      - 'libs/**'
+      - 'third_party/**'
+      - 'data/**'
+      - 'packaging/bootstrap/**'
       - 'packaging/images/tor-bookworm/**'
 
 permissions:
   contents: read
 
 concurrency:
-  group: debian-packages-${{ github.ref }}
+  group: debian-packages-${{ github.sha }}
   cancel-in-progress: false
 
 jobs:

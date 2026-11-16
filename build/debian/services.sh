@@ -15,6 +15,11 @@ for command in go dpkg-buildpackage dpkg-deb make cc getent groupadd; do
     command -v "$command" >/dev/null || { echo "Missing build command: $command" >&2; exit 2; }
 done
 
+# Debian packages record their source commit in the build manifest. Avoid
+# embedding checkout state, which is also unavailable when the container user
+# differs from the checkout owner. This applies to builds and package tests.
+export GOFLAGS="${GOFLAGS:+$GOFLAGS }-buildvcs=false"
+
 # The upstream packaging gives its setuid helper to this named group.
 # Package preinst creates the group on the target; only the build container is
 # prepared here. No package or maintainer script is installed/executed.
